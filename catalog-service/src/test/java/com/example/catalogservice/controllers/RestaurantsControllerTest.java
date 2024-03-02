@@ -51,7 +51,7 @@ class RestaurantsControllerTest {
                 .country("ssw")
                 .locality("sdw")
                 .street("we")
-                .zipcode(600001)
+                .zipcode("600001")
                 .build();
         RestaurantRequest request = RestaurantRequest.builder()
                 .name("name")
@@ -77,7 +77,7 @@ class RestaurantsControllerTest {
                 .country("ssw")
                 .locality("sdw")
                 .street("we")
-                .zipcode(600001)
+                .zipcode("600001")
                 .build();
         RestaurantRequest request = RestaurantRequest.builder()
                 .name("name")
@@ -104,7 +104,7 @@ class RestaurantsControllerTest {
                 .country("ssw")
                 .locality("sdw")
                 .street("we")
-                .zipcode(600001)
+                .zipcode("600001")
                 .build();
         RestaurantRequest request = RestaurantRequest.builder()
                 .name("name")

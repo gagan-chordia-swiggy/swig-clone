@@ -4,7 +4,11 @@ import jakarta.persistence.Embeddable;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Pattern;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
 import org.springframework.validation.annotation.Validated;
 
 @Data
@@ -14,7 +18,7 @@ import org.springframework.validation.annotation.Validated;
 @Embeddable
 @Validated
 public class Address {
-    @Min(value = 1)
+    @Min(value = 1, message = "Building number has to be natural number")
     @NonNull
     private Integer buildingNumber;
 
@@ -33,7 +37,6 @@ public class Address {
     @NonNull
     private String country;
 
-    @Pattern(regexp = "^[1-9]\\d{5}$")
-    @NonNull
-    private Integer zipcode;
+    @Pattern(regexp = "^[1-9]\\d{5}$", message = "Zip Code has length of 6 [1-9]{1}[0-9]{5}")
+    private String zipcode;
 }

@@ -139,7 +139,7 @@ class ItemsServiceTest {
     }
 
     @Test
-    void test_fetchItemByIdFromARestaurant_successfully() {
+    void test_fetchItemByNameFromARestaurant_successfully() {
         String restaurantId = "abc";
         String itemName = "def";
         Restaurant restaurant = mock(Restaurant.class);

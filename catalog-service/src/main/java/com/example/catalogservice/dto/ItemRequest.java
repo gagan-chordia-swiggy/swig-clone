@@ -21,6 +21,6 @@ public class ItemRequest {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String description;
 
-    @Min(value = 100)
+    @Min(value = 100, message = "Price must be at least 100 rupees")
     private double price;
 }
