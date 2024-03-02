@@ -1,12 +1,12 @@
 package com.example.catalogservice.models;
 
-import com.example.catalogservice.dto.Address;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 import lombok.AllArgsConstructor;
@@ -19,8 +19,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "restaurants")
-public class Restaurants {
+@Table(name = "food_items")
+public class Items {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
@@ -28,6 +28,12 @@ public class Restaurants {
     @Column(nullable = false)
     private String name;
 
+    private String description;
+
     @Column(nullable = false)
-    private Address address;
+    private Double price;
+
+    @ManyToOne
+    @JoinColumn(name = "restaurant_id", nullable = false)
+    private Restaurants restaurant;
 }
