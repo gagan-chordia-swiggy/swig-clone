@@ -1,7 +1,15 @@
 package com.example.catalogservice.dto;
 
 import com.example.catalogservice.models.Restaurants;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class RestaurantResponse {
     private String id;
     private String name;
