@@ -1,6 +1,6 @@
 package com.example.catalogservice.dto;
 
-import com.example.catalogservice.models.Restaurants;
+import com.example.catalogservice.models.Restaurant;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -15,7 +15,7 @@ public class RestaurantResponse {
     private String name;
     private Address address;
 
-    public RestaurantResponse(Restaurants restaurant) {
+    public RestaurantResponse(Restaurant restaurant) {
         this.id = restaurant.getId();
         this.name = restaurant.getName();
         this.address = restaurant.getAddress();

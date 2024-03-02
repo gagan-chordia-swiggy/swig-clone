@@ -21,9 +21,6 @@ public class ItemRequest {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String description;
 
-    @NonNull
-    private String restaurantId;
-
     @Min(value = 100)
     private double price;
 }

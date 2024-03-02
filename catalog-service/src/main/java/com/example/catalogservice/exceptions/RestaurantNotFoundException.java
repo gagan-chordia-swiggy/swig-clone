@@ -1,6 +1,8 @@
 package com.example.catalogservice.exceptions;
 
-public class RestaurantNotFoundException extends IllegalArgumentException {
+import java.util.NoSuchElementException;
+
+public class RestaurantNotFoundException extends NoSuchElementException {
     public RestaurantNotFoundException() {
         super();
     }

@@ -5,7 +5,7 @@ import com.example.catalogservice.dto.ApiResponse;
 import com.example.catalogservice.dto.RestaurantRequest;
 import com.example.catalogservice.exceptions.RestaurantAlreadyExistsException;
 import com.example.catalogservice.exceptions.RestaurantNotFoundException;
-import com.example.catalogservice.models.Restaurants;
+import com.example.catalogservice.models.Restaurant;
 import com.example.catalogservice.repositories.RestaurantsRepository;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -53,15 +53,15 @@ class RestaurantsServiceTest {
                 .name("restaurant")
                 .address(mock(Address.class))
                 .build();
-        Restaurants restaurant = mock(Restaurants.class);
+        Restaurant restaurant = mock(Restaurant.class);
 
         when(restaurantsRepository.existsByNameAndAddress(request.getName(), request.getAddress())).thenReturn(false);
-        when(restaurantsRepository.save(any(Restaurants.class))).thenReturn(restaurant);
+        when(restaurantsRepository.save(any(Restaurant.class))).thenReturn(restaurant);
         ResponseEntity<ApiResponse> response = restaurantsService.create(request);
 
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
         assertEquals(RESTAURANT_CREATED, Objects.requireNonNull(response.getBody()).getMessage());
-        verify(restaurantsRepository, times(1)).save(any(Restaurants.class));
+        verify(restaurantsRepository, times(1)).save(any(Restaurant.class));
     }
 
     @Test
@@ -74,15 +74,15 @@ class RestaurantsServiceTest {
         when(restaurantsRepository.existsByNameAndAddress(request.getName(), request.getAddress())).thenReturn(true);
 
         assertThrows(RestaurantAlreadyExistsException.class, () -> restaurantsService.create(request));
-        verify(restaurantsRepository, never()).save(any(Restaurants.class));
+        verify(restaurantsRepository, never()).save(any(Restaurant.class));
     }
 
     @Test
     void test_fetchAllRestaurants() {
-        Restaurants firstRestaurant = mock(Restaurants.class);
-        Restaurants secondRestaurant = mock(Restaurants.class);
-        Restaurants thirdRestaurant = mock(Restaurants.class);
-        List<Restaurants> restaurants = List.of(firstRestaurant, secondRestaurant, thirdRestaurant);
+        Restaurant firstRestaurant = mock(Restaurant.class);
+        Restaurant secondRestaurant = mock(Restaurant.class);
+        Restaurant thirdRestaurant = mock(Restaurant.class);
+        List<Restaurant> restaurants = List.of(firstRestaurant, secondRestaurant, thirdRestaurant);
 
         when(restaurantsRepository.findAll()).thenReturn(restaurants);
         ResponseEntity<ApiResponse> response = restaurantsService.fetchAll();
@@ -94,7 +94,7 @@ class RestaurantsServiceTest {
 
     @Test
     void test_fetchRestaurantById_successfully() {
-        Restaurants restaurant = mock(Restaurants.class);
+        Restaurant restaurant = mock(Restaurant.class);
         String restaurantId = "id";
 
         when(restaurantsRepository.findById(restaurantId)).thenReturn(Optional.of(restaurant));

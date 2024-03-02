@@ -1,6 +1,6 @@
 package com.example.catalogservice.dto;
 
-import com.example.catalogservice.models.Items;
+import com.example.catalogservice.models.Item;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 import lombok.AllArgsConstructor;
@@ -24,7 +24,7 @@ public class ItemResponse {
 
     private double price;
 
-    public ItemResponse(Items item) {
+    public ItemResponse(Item item) {
         this.id = item.getId();
         this.name = item.getName();
         this.description = item.getDescription();

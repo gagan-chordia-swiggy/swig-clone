@@ -5,7 +5,7 @@ import com.example.catalogservice.dto.RestaurantRequest;
 import com.example.catalogservice.dto.RestaurantResponse;
 import com.example.catalogservice.exceptions.RestaurantAlreadyExistsException;
 import com.example.catalogservice.exceptions.RestaurantNotFoundException;
-import com.example.catalogservice.models.Restaurants;
+import com.example.catalogservice.models.Restaurant;
 import com.example.catalogservice.repositories.RestaurantsRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -31,7 +31,7 @@ public class RestaurantsService {
             throw new RestaurantAlreadyExistsException();
         }
 
-        Restaurants restaurant = Restaurants.builder()
+        Restaurant restaurant = Restaurant.builder()
                 .name(request.getName())
                 .address(request.getAddress())
                 .build();
@@ -50,10 +50,10 @@ public class RestaurantsService {
     }
 
     public ResponseEntity<ApiResponse> fetchAll() {
-        List<Restaurants> restaurants = restaurantsRepository.findAll();
+        List<Restaurant> restaurants = restaurantsRepository.findAll();
         List<RestaurantResponse> responses = new ArrayList<>();
 
-        for (Restaurants restaurant: restaurants) {
+        for (Restaurant restaurant: restaurants) {
             responses.add(new RestaurantResponse(restaurant));
         }
 
@@ -67,7 +67,7 @@ public class RestaurantsService {
     }
 
     public ResponseEntity<ApiResponse> fetchById(String id) {
-        Restaurants restaurant = restaurantsRepository.findById(id)
+        Restaurant restaurant = restaurantsRepository.findById(id)
                 .orElseThrow(RestaurantNotFoundException::new);
 
         ApiResponse response = ApiResponse.builder()
