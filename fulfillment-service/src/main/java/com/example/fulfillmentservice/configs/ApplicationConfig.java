@@ -1,5 +1,6 @@
 package com.example.fulfillmentservice.configs;
 
+import com.example.fulfillmentservice.exceptions.UserNotFoundException;
 import com.example.fulfillmentservice.repositories.UserRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,7 +33,7 @@ public class ApplicationConfig {
     @Bean
     public UserDetailsService userDetailsService() {
         return username -> userRepository.findByUsername(username)
-                .orElseThrow();
+                .orElseThrow(UserNotFoundException::new);
     }
 
     @Bean
