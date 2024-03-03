@@ -11,7 +11,7 @@ type Address struct {
 }
 
 type User struct {
-	Id       string   `gorm:"primaryKey" json:"id"`
+	Id       uint64   `gorm:"primaryKey;autoIncrement:true" json:"id"`
 	Name     string   `json:"name"`
 	Username string   `json:"username" gorm:"unique"`
 	Password string   `json:"password"`

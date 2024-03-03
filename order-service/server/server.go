@@ -4,14 +4,16 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/google/uuid"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"gorm.io/gorm"
 	"log"
 	"net"
 	"order-service/database"
 	"order-service/models"
 	u "order-service/proto/users"
+	"regexp"
 )
 
 type UserServer struct {
@@ -39,6 +41,18 @@ func main() {
 }
 
 func (userServer *UserServer) Create(_ context.Context, req *u.UserRequest) (*u.UserResponse, error) {
+	if req.Name == "" || req.Username == "" || req.Password == "" || req.Address == nil {
+		return nil, status.Errorf(codes.InvalidArgument, "Invalid user data")
+	}
+
+	zipcodeRegex := regexp.MustCompile("^[1-9]\\d{5}")
+
+	if req.Address.City == "" || req.Address.Street == "" || req.Address.State == "" ||
+		req.Address.Locality == "" || zipcodeRegex.Match([]byte(req.Address.Zipcode)) ||
+		req.Address.Country == "" || req.Address.BuildingNumber < 1 {
+		return nil, status.Errorf(codes.InvalidArgument, "Invalid address data")
+	}
+
 	address := &models.Address{
 		BuildingNumber: req.Address.BuildingNumber,
 		Street:         req.Address.Street,
@@ -49,7 +63,6 @@ func (userServer *UserServer) Create(_ context.Context, req *u.UserRequest) (*u.
 		Zipcode:        req.Address.Zipcode,
 	}
 	user := &models.User{
-		Id:       uuid.New().String(),
 		Name:     req.Name,
 		Username: req.Username,
 		Password: req.Password,
@@ -64,7 +77,6 @@ func (userServer *UserServer) Create(_ context.Context, req *u.UserRequest) (*u.
 	}
 
 	response := &u.UserResponse{
-		Id:       user.Id,
 		Name:     user.Name,
 		Username: user.Username,
 		Address:  req.Address,

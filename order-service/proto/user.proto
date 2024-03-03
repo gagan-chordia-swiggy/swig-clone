@@ -26,7 +26,6 @@ message UserRequest {
 };
 
 message UserResponse {
-  string id = 1;
   string name = 2;
   string username = 3;
   Address address = 4;
