@@ -1,0 +1,16 @@
+server:
+    port: 8081
+spring:
+    application:
+        name: FULFILLMENT-SERVICE
+    datasource:
+        url: jdbc:postgresql://localhost:5432/fulfillment_service
+        username: postgres
+        password: root1234
+        driverClassName: org.postgresql.Driver
+    jpa:
+        properties:
+            hibernate:
+                dialect: org.hibernate.dialect.PostgreSQLDialect
+        hibernate:
+            ddl-auto: update
