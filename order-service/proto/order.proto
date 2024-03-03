@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+option go_package = "order-service/proto/orders";
+
+package orders;
+
+service OrderService {
+  rpc Place(OrderRequest) returns (OrderResponse);
+}
+
+message OrderRequest {
+  string restaurantId = 1;
+  map<string, uint32> items = 2;
+};
+
+message OrderResponse {
+  uint64 orderId = 1;
+  string username = 2;
+  string restaurantId = 3;
+  map<string, uint32> items = 4;
+  double totalAmount = 5;
+};
+
+// protoc -Iproto --go_out=.  --go_opt=module=order-service --go-grpc_out=. --go-grpc_opt=module=order-service proto/order.proto
