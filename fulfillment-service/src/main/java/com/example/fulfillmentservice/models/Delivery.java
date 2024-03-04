@@ -39,6 +39,10 @@ public class Delivery {
     @JoinColumn(name = "executive_id")
     private User user;
 
+    @Column(nullable = false)
+    private Address restaurantAddress;
+
+    @Builder.Default
     @Enumerated(EnumType.STRING)
-    private DeliveryStatus status;
+    private DeliveryStatus status = DeliveryStatus.PACKED;
 }

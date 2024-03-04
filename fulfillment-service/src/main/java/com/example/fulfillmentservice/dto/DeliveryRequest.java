@@ -1,5 +1,6 @@
 package com.example.fulfillmentservice.dto;
 
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -11,5 +12,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class DeliveryRequest {
     private long orderId;
+    @Valid
     private Address pickup;
 }
