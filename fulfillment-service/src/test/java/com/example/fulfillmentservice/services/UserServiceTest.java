@@ -74,7 +74,7 @@ class UserServiceTest {
     }
 
     @Test
-    void test_cannotSaveUserWithRegisteredUsername() {
+    void test_cannotSaveUserWithRegisteredUsername_throwsException() {
         Address address = Address.builder()
                 .buildingNumber(1)
                 .street("street")

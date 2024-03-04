@@ -36,6 +36,8 @@ public class UserService {
                 .password(passwordEncoder.encode(request.getPassword()))
                 .build();
 
+        userRepository.save(user);
+
         ApiResponse response = ApiResponse.builder()
                 .message(USER_REGISTERED)
                 .status(HttpStatus.CREATED)

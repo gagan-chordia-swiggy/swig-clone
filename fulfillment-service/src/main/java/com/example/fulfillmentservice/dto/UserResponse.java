@@ -6,14 +6,23 @@ import com.example.fulfillmentservice.models.User;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class UserResponse {
-    private final String id;
-    private final String name;
-    private final String username;
-    private final Address address;
+    private String id;
+    private String name;
+    private String username;
+    private Address address;
 
     @Enumerated(EnumType.STRING)
-    private final Availability availability;
+    private Availability availability;
 
     public UserResponse(User user) {
         this.id = user.getId();
