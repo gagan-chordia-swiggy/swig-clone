@@ -11,4 +11,9 @@ public final class Constants {
     // Deliveries
     public static final String DELIVERY_FACILITATED = "Delivery has been facilitated";
     public static final String STATUS_UPDATED = "Delivery status updated to ";
+    public static final String DELIVERY_NOT_FOUND = "Delivery not found";
+    public static final String NO_EXECUTIVE_NEARBY = "No delivery executive nearby";
+    public static final String ORDER_ALREADY_FACILITATED = "Order has already been facilitated";
+    public static final String ORDER_ALREADY_DELIVERED = "Order has already been delivered";
+    public static final String UNAUTHORIZED_STATUS_UPDATE = "Executive trying to update some other executive's order";
 }
