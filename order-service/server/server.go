@@ -1,9 +1,11 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -130,7 +132,15 @@ func (orderServer *OrderServer) Place(ctx context.Context, req *o.OrderRequest) 
 	}
 
 	total, err := calculateTotal(req)
+	if err != nil {
+		return nil, status.Errorf(codes.Unknown, err.Error())
+	}
+
 	itemsByte, err := json.Marshal(req.Items)
+	if err != nil {
+		return nil, status.Errorf(codes.Unknown, err.Error())
+	}
+
 	itemStr := string(itemsByte)
 
 	order := &models.Order{
@@ -145,6 +155,24 @@ func (orderServer *OrderServer) Place(ctx context.Context, req *o.OrderRequest) 
 	if err != nil {
 		errorString := fmt.Sprintf("error storing the order: %v", err)
 		return nil, status.Errorf(codes.Unknown, errorString)
+	}
+
+	rAddress, err := getRestaurantAddress(req.RestaurantId)
+	if err != nil {
+		return nil, status.Errorf(codes.Canceled, err.Error())
+	}
+
+	requestBody, _ := json.Marshal(map[string]any{
+		"orderId":         order.Id,
+		"deliveryAddress": user.Address,
+		"pickupAddress":   rAddress,
+	})
+
+	reqBody := bytes.NewBuffer(requestBody)
+	resp, err := http.Post("http://localhost:8081/api/v1/deliveries", "application/json", reqBody)
+
+	if resp.StatusCode != http.StatusCreated {
+		return nil, status.Errorf(codes.Canceled, "Order not created as no executive found nearby")
 	}
 
 	response := &o.OrderResponse{
@@ -194,9 +222,9 @@ func calculateTotal(r *o.OrderRequest) (float64, error) {
 
 	for k, v := range r.Items {
 		apiStr := fmt.Sprintf("http://localhost:8080/api/v1/restaurants/%v/items/%v", rId, k)
-		resp, err := http.Get(apiStr)
-		if err != nil {
-			return 0.0, err
+		resp, _ := http.Get(apiStr)
+		if resp.StatusCode != http.StatusOK {
+			return 0.0, errors.New("item not found")
 		}
 
 		bodyBytes, _ := ioutil.ReadAll(resp.Body)
@@ -219,4 +247,29 @@ func calculateTotal(r *o.OrderRequest) (float64, error) {
 	}
 
 	return total, nil
+}
+
+func getRestaurantAddress(r string) (*models.Address, error) {
+	apiStr := fmt.Sprintf("http://localhost:8080/api/v1/restaurants/%v", r)
+	resp, _ := http.Get(apiStr)
+	if resp.StatusCode != http.StatusOK {
+		return nil, errors.New("restaurant not found")
+	}
+
+	bodyBytes, _ := ioutil.ReadAll(resp.Body)
+	body := string(bodyBytes)
+
+	var response struct {
+		Data struct {
+			Restaurant struct {
+				Address *models.Address `json:"address"`
+			} `json:"restaurant"`
+		} `json:"data"`
+	}
+
+	if err := json.Unmarshal([]byte(body), &response); err != nil {
+		return nil, err
+	}
+
+	return response.Data.Restaurant.Address, nil
 }
