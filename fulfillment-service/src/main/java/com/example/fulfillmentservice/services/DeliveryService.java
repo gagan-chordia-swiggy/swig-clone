@@ -103,7 +103,6 @@ public class DeliveryService {
     }
 
     private String getDetailedAddress(Address address) {
-        System.out.println(address.toString());
         String jsonResponse =  String.valueOf(restTemplate.getForEntity(
                 "https://nominatim.openstreetmap.org/search?country=India"
                         + "&postalcode=" + address.getZipcode() + "&format=json",
