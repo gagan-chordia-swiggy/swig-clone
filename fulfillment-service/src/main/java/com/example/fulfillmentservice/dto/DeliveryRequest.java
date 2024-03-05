@@ -12,6 +12,10 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class DeliveryRequest {
     private long orderId;
+
     @Valid
-    private Address pickup;
+    private Address pickupAddress;
+
+    @Valid
+    private Address deliveryAddress;
 }

@@ -38,7 +38,7 @@ public class DeliveryService {
             throw new OrderHasAlreadyBeenFacilitatedException();
         }
 
-        User nearestExecutive = this.getNearestAvailableExecutive(request.getPickup());
+        User nearestExecutive = this.getNearestAvailableExecutive(request.getPickupAddress());
 
         if (nearestExecutive == null) {
             throw new NoExecutiveNearbyException();
@@ -46,7 +46,8 @@ public class DeliveryService {
 
         Delivery delivery = Delivery.builder()
                 .user(nearestExecutive)
-                .restaurantAddress(request.getPickup())
+                .restaurantAddress(request.getPickupAddress())
+                .customerAddress(request.getDeliveryAddress())
                 .orderId(request.getOrderId())
                 .build();
 

@@ -39,8 +39,27 @@ public class Delivery {
     @JoinColumn(name = "executive_id")
     private User user;
 
-    @Column(nullable = false)
+    @AttributeOverrides(value = {
+            @AttributeOverride(name = "buildingNumber", column = @Column(name = "r_buildingNumber")),
+            @AttributeOverride(name = "street", column = @Column(name = "r_street")),
+            @AttributeOverride(name = "locality", column = @Column(name = "r_locality")),
+            @AttributeOverride(name = "city", column = @Column(name = "r_city")),
+            @AttributeOverride(name = "state", column = @Column(name = "r_state")),
+            @AttributeOverride(name = "country", column = @Column(name = "r_country")),
+            @AttributeOverride(name = "zipcode", column = @Column(name = "r_zipcode")),
+    })
     private Address restaurantAddress;
+
+    @AttributeOverrides(value = {
+            @AttributeOverride(name = "buildingNumber", column = @Column(name = "c_buildingNumber")),
+            @AttributeOverride(name = "street", column = @Column(name = "c_street")),
+            @AttributeOverride(name = "locality", column = @Column(name = "c_locality")),
+            @AttributeOverride(name = "city", column = @Column(name = "c_city")),
+            @AttributeOverride(name = "state", column = @Column(name = "c_state")),
+            @AttributeOverride(name = "country", column = @Column(name = "c_country")),
+            @AttributeOverride(name = "zipcode", column = @Column(name = "c_zipcode")),
+    })
+    private Address customerAddress;
 
     @Builder.Default
     @Enumerated(EnumType.STRING)

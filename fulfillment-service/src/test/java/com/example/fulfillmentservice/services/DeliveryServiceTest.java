@@ -64,7 +64,7 @@ class DeliveryServiceTest {
         User executive = mock(User.class);
         DeliveryRequest request = DeliveryRequest.builder()
                 .orderId(orderId)
-                .pickup(address)
+                .pickupAddress(address)
                 .build();
         String jsonResponse = "<200 OK OK,[{\"place_id\":332908868,\"licence\":\"Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright\",\"lat\":\"13.08114703448276\",\"lon\":\"80.26748411034482\",\"category\":\"place\",\"type\":\"postcode\",\"place_rank\":21,\"importance\":0.12000999999999995,\"addresstype\":\"postcode\",\"name\":\"600001\",\"display_name\":\"600001, Zone 5 Royapuram, Chennai, Chennai District, Tamil Nadu, India\",\"boundingbox\":[\"12.9211470\",\"13.2411470\",\"80.1074841\",\"80.4274841\"]}],[Server:\"nginx\", Date:\"Mon, 04 Mar 2024 16:29:08 GMT\", Content-Type:\"application/json; charset=utf-8\", Content-Length:\"442\", Connection:\"keep-alive\", Keep-Alive:\"timeout=20\"]>";
         String apiString = "https://nominatim.openstreetmap.org/search?country=India&postalcode=" + address.getZipcode() + "&format=json";
@@ -96,7 +96,7 @@ class DeliveryServiceTest {
         long orderId = 1L;
         DeliveryRequest request = DeliveryRequest.builder()
                 .orderId(orderId)
-                .pickup(address)
+                .pickupAddress(address)
                 .build();
 
         when(deliveryRepository.existsByOrderId(orderId)).thenReturn(true);
@@ -128,7 +128,7 @@ class DeliveryServiceTest {
         long orderId = 1L;
         DeliveryRequest request = DeliveryRequest.builder()
                 .orderId(orderId)
-                .pickup(restaurantAddress)
+                .pickupAddress(restaurantAddress)
                 .build();
         String jsonResponse = "<200 OK OK,[{\"place_id\":332908868,\"licence\":\"Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright\",\"lat\":\"13.08114703448276\",\"lon\":\"80.26748411034482\",\"category\":\"place\",\"type\":\"postcode\",\"place_rank\":21,\"importance\":0.12000999999999995,\"addresstype\":\"postcode\",\"name\":\"600001\",\"display_name\":\"600001, Zone 5 Royapuram, Chennai, Chennai District, Tamil Nadu, India\",\"boundingbox\":[\"12.9211470\",\"13.2411470\",\"80.1074841\",\"80.4274841\"]}],[Server:\"nginx\", Date:\"Mon, 04 Mar 2024 16:29:08 GMT\", Content-Type:\"application/json; charset=utf-8\", Content-Length:\"442\", Connection:\"keep-alive\", Keep-Alive:\"timeout=20\"]>";
         String apiString = "https://nominatim.openstreetmap.org/search?country=India&postalcode=" + restaurantAddress.getZipcode() + "&format=json";
