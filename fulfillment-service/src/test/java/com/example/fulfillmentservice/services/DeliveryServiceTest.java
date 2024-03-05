@@ -3,6 +3,7 @@ package com.example.fulfillmentservice.services;
 import com.example.fulfillmentservice.dto.Address;
 import com.example.fulfillmentservice.dto.ApiResponse;
 import com.example.fulfillmentservice.dto.DeliveryRequest;
+import com.example.fulfillmentservice.enums.Availability;
 import com.example.fulfillmentservice.exceptions.NoExecutiveNearbyException;
 import com.example.fulfillmentservice.exceptions.OrderHasAlreadyBeenFacilitatedException;
 import com.example.fulfillmentservice.models.User;
@@ -22,13 +23,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
+import java.util.Objects;
 
+import static com.example.fulfillmentservice.constants.Constants.DELIVERY_FACILITATED;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.mockito.MockitoAnnotations.openMocks;
 
 class DeliveryServiceTest {
@@ -69,17 +70,19 @@ class DeliveryServiceTest {
         String jsonResponse = "<200 OK OK,[{\"place_id\":332908868,\"licence\":\"Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright\",\"lat\":\"13.08114703448276\",\"lon\":\"80.26748411034482\",\"category\":\"place\",\"type\":\"postcode\",\"place_rank\":21,\"importance\":0.12000999999999995,\"addresstype\":\"postcode\",\"name\":\"600001\",\"display_name\":\"600001, Zone 5 Royapuram, Chennai, Chennai District, Tamil Nadu, India\",\"boundingbox\":[\"12.9211470\",\"13.2411470\",\"80.1074841\",\"80.4274841\"]}],[Server:\"nginx\", Date:\"Mon, 04 Mar 2024 16:29:08 GMT\", Content-Type:\"application/json; charset=utf-8\", Content-Length:\"442\", Connection:\"keep-alive\", Keep-Alive:\"timeout=20\"]>";
         String apiString = "https://nominatim.openstreetmap.org/search?country=India&postalcode=" + address.getZipcode() + "&format=json";
 
-
         when(deliveryRepository.existsByOrderId(orderId)).thenReturn(false);
         when(userRepository.findAll()).thenReturn(List.of(executive));
         when(restTemplate.getForEntity(apiString, String.class))
                 .thenReturn(new ResponseEntity<>(jsonResponse, HttpStatus.OK));
         when(executive.getAddress()).thenReturn(address);
+        when(executive.getAvailability()).thenReturn(Availability.AVAILABLE);
         when(address.getCity()).thenReturn("city");
         when(address.getZipcode()).thenReturn("600001");
         ResponseEntity<ApiResponse> response = deliveryService.facilitate(request);
 
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
+        assertEquals(DELIVERY_FACILITATED, Objects.requireNonNull(response.getBody()).getMessage());
+        verify(userRepository, times(1)).findAll();
     }
 
     @Test
@@ -102,6 +105,7 @@ class DeliveryServiceTest {
         when(deliveryRepository.existsByOrderId(orderId)).thenReturn(true);
 
         assertThrows(OrderHasAlreadyBeenFacilitatedException.class, () -> deliveryService.facilitate(request));
+        verify(userRepository, never()).findAll();
     }
 
     @Test
@@ -142,5 +146,39 @@ class DeliveryServiceTest {
         when(restaurantAddress.getZipcode()).thenReturn("600001");
 
         assertThrows(NoExecutiveNearbyException.class, () -> deliveryService.facilitate(request));
+        verify(userRepository, times(1)).findAll();
+    }
+
+    @Test
+    void test_whenNoExecutiveIsAvailableToFacilitateDelivery_throwException() {
+        Address address = spy(Address.builder()
+                .buildingNumber(1)
+                .street("street")
+                .locality("locality")
+                .city("city")
+                .state("state")
+                .country("country")
+                .zipcode("600001")
+                .build());
+        long orderId = 1L;
+        User executive = mock(User.class);
+        DeliveryRequest request = DeliveryRequest.builder()
+                .orderId(orderId)
+                .pickupAddress(address)
+                .build();
+        String jsonResponse = "<200 OK OK,[{\"place_id\":332908868,\"licence\":\"Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright\",\"lat\":\"13.08114703448276\",\"lon\":\"80.26748411034482\",\"category\":\"place\",\"type\":\"postcode\",\"place_rank\":21,\"importance\":0.12000999999999995,\"addresstype\":\"postcode\",\"name\":\"600001\",\"display_name\":\"600001, Zone 5 Royapuram, Chennai, Chennai District, Tamil Nadu, India\",\"boundingbox\":[\"12.9211470\",\"13.2411470\",\"80.1074841\",\"80.4274841\"]}],[Server:\"nginx\", Date:\"Mon, 04 Mar 2024 16:29:08 GMT\", Content-Type:\"application/json; charset=utf-8\", Content-Length:\"442\", Connection:\"keep-alive\", Keep-Alive:\"timeout=20\"]>";
+        String apiString = "https://nominatim.openstreetmap.org/search?country=India&postalcode=" + address.getZipcode() + "&format=json";
+
+        when(deliveryRepository.existsByOrderId(orderId)).thenReturn(false);
+        when(userRepository.findAll()).thenReturn(List.of(executive));
+        when(restTemplate.getForEntity(apiString, String.class))
+                .thenReturn(new ResponseEntity<>(jsonResponse, HttpStatus.OK));
+        when(executive.getAddress()).thenReturn(address);
+        when(executive.getAvailability()).thenReturn(Availability.UNAVAILABLE);
+        when(address.getCity()).thenReturn("city");
+        when(address.getZipcode()).thenReturn("600001");
+
+        assertThrows(NoExecutiveNearbyException.class, () -> deliveryService.facilitate(request));
+        verify(userRepository, times(1)).findAll();
     }
 }

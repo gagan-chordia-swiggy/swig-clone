@@ -3,6 +3,7 @@ package com.example.fulfillmentservice.services;
 import com.example.fulfillmentservice.dto.Address;
 import com.example.fulfillmentservice.dto.ApiResponse;
 import com.example.fulfillmentservice.dto.DeliveryRequest;
+import com.example.fulfillmentservice.enums.Availability;
 import com.example.fulfillmentservice.exceptions.NoExecutiveNearbyException;
 import com.example.fulfillmentservice.exceptions.OrderHasAlreadyBeenFacilitatedException;
 import com.example.fulfillmentservice.models.Delivery;
@@ -44,12 +45,16 @@ public class DeliveryService {
             throw new NoExecutiveNearbyException();
         }
 
+        nearestExecutive.setAvailability(Availability.UNAVAILABLE);
         Delivery delivery = Delivery.builder()
                 .user(nearestExecutive)
                 .restaurantAddress(request.getPickupAddress())
                 .customerAddress(request.getDeliveryAddress())
                 .orderId(request.getOrderId())
                 .build();
+
+        deliveryRepository.save(delivery);
+        userRepository.save(nearestExecutive);
 
         ApiResponse response = ApiResponse.builder()
                 .message(DELIVERY_FACILITATED)
@@ -72,7 +77,7 @@ public class DeliveryService {
 
         double minDistance = Double.MAX_VALUE;
         for (User executive : executives) {
-            if (!executive.getAddress().getCity().equals(address.getCity())) {
+            if (!executive.getAddress().getCity().equals(address.getCity()) || executive.getAvailability().equals(Availability.UNAVAILABLE)) {
                 continue;
             }
 
