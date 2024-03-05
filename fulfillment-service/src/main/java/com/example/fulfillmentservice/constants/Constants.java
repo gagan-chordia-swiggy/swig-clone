@@ -10,4 +10,5 @@ public final class Constants {
 
     // Deliveries
     public static final String DELIVERY_FACILITATED = "Delivery has been facilitated";
+    public static final String STATUS_UPDATED = "Delivery status updated to ";
 }

@@ -3,9 +3,15 @@ package com.example.fulfillmentservice.services;
 import com.example.fulfillmentservice.dto.Address;
 import com.example.fulfillmentservice.dto.ApiResponse;
 import com.example.fulfillmentservice.dto.DeliveryRequest;
+import com.example.fulfillmentservice.dto.DeliveryResponse;
 import com.example.fulfillmentservice.enums.Availability;
+import com.example.fulfillmentservice.enums.DeliveryStatus;
+import com.example.fulfillmentservice.exceptions.DeliveryNotFoundException;
 import com.example.fulfillmentservice.exceptions.NoExecutiveNearbyException;
 import com.example.fulfillmentservice.exceptions.OrderHasAlreadyBeenFacilitatedException;
+import com.example.fulfillmentservice.exceptions.OrderHasBeenAlreadyDeliveredException;
+import com.example.fulfillmentservice.exceptions.UnauthorizedStatusUpdateException;
+import com.example.fulfillmentservice.exceptions.UserNotFoundException;
 import com.example.fulfillmentservice.models.Delivery;
 import com.example.fulfillmentservice.models.User;
 import com.example.fulfillmentservice.repositories.DeliveryRepository;
@@ -19,6 +25,7 @@ import lombok.RequiredArgsConstructor;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -26,6 +33,7 @@ import java.util.List;
 import java.util.Map;
 
 import static com.example.fulfillmentservice.constants.Constants.DELIVERY_FACILITATED;
+import static com.example.fulfillmentservice.constants.Constants.STATUS_UPDATED;
 
 @Service
 @RequiredArgsConstructor
@@ -60,6 +68,38 @@ public class DeliveryService {
                 .message(DELIVERY_FACILITATED)
                 .status(HttpStatus.CREATED)
                 .data(Map.of("delivery", delivery))
+                .build();
+
+        return ResponseEntity.status(response.getStatus()).body(response);
+    }
+
+    public ResponseEntity<ApiResponse> updateStatus(String deliveryId) {
+        Delivery delivery = deliveryRepository.findById(deliveryId)
+                .orElseThrow(DeliveryNotFoundException::new);
+
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(UserNotFoundException::new);
+
+        isRespectiveExecutive(delivery, user);
+
+        DeliveryStatus status = delivery.getStatus();
+
+        isAlreadyDelivered(status);
+
+        if (status.equals(DeliveryStatus.PICKED_UP)) {
+            delivery.setStatus(DeliveryStatus.DELIVERED);
+            user.setAvailability(Availability.AVAILABLE);
+            userRepository.save(user);
+        } else {
+            delivery.setStatus(DeliveryStatus.PICKED_UP);
+        }
+        deliveryRepository.save(delivery);
+
+        ApiResponse response = ApiResponse.builder()
+                .message(STATUS_UPDATED + delivery.getStatus().toString())
+                .status(HttpStatus.OK)
+                .data(Map.of("delivery", new DeliveryResponse(delivery)))
                 .build();
 
         return ResponseEntity.status(response.getStatus()).body(response);
@@ -128,5 +168,17 @@ public class DeliveryService {
         double c = Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
         return EARTH_RADIUS * c;
+    }
+
+    private static void isRespectiveExecutive(Delivery delivery, User user) {
+        if (!delivery.getUser().equals(user)) {
+            throw new UnauthorizedStatusUpdateException();
+        }
+    }
+
+    private static void isAlreadyDelivered(DeliveryStatus status) {
+        if (status.equals(DeliveryStatus.DELIVERED)) {
+            throw new OrderHasBeenAlreadyDeliveredException();
+        }
     }
 }
