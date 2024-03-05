@@ -71,6 +71,10 @@ public class DeliveryService {
 
         double minDistance = Double.MAX_VALUE;
         for (User executive : executives) {
+            if (!executive.getAddress().getCity().equals(address.getCity())) {
+                continue;
+            }
+
             String executiveAddressResponse = this.getDetailedAddress(executive.getAddress());
             JsonNode executiveAddressJson = objectMapper.readTree(executiveAddressResponse);
             double executiveLatitude = executiveAddressJson.get("lat").asDouble();
