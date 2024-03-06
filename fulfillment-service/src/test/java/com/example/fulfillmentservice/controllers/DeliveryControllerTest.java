@@ -1,9 +1,8 @@
 package com.example.fulfillmentservice.controllers;
 
-import com.example.fulfillmentservice.exceptions.DeliveryNotFoundException;
-import com.example.fulfillmentservice.exceptions.OrderHasBeenAlreadyDeliveredException;
-import com.example.fulfillmentservice.exceptions.UnauthorizedStatusUpdateException;
-import com.example.fulfillmentservice.exceptions.UserNotFoundException;
+import com.example.fulfillmentservice.dto.Address;
+import com.example.fulfillmentservice.dto.DeliveryRequest;
+import com.example.fulfillmentservice.exceptions.*;
 import com.example.fulfillmentservice.services.DeliveryService;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -16,14 +15,13 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
-import static org.mockito.Mockito.reset;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -45,10 +43,9 @@ class DeliveryControllerTest {
     }
 
     // TODO: Expected status differs from actual which is 200OK
-    /*
     @Test
     void test_deliveryIsFacilitated_created() throws Exception {
-        Address address = spy(Address.builder()
+        Address address = Address.builder()
                 .buildingNumber(1)
                 .street("street")
                 .locality("locality")
@@ -56,7 +53,7 @@ class DeliveryControllerTest {
                 .state("state")
                 .country("country")
                 .zipcode("600001")
-                .build());
+                .build();
         long orderId = 1L;
         DeliveryRequest request = DeliveryRequest.builder()
                 .orderId(orderId)
@@ -76,7 +73,7 @@ class DeliveryControllerTest {
 
     @Test
     void test_deliveryAlreadyFacilitatedForGivenOrderId_badRequest() throws Exception {
-        Address address = spy(Address.builder()
+        Address address = Address.builder()
                 .buildingNumber(1)
                 .street("street")
                 .locality("locality")
@@ -84,7 +81,7 @@ class DeliveryControllerTest {
                 .state("state")
                 .country("country")
                 .zipcode("600001")
-                .build());
+                .build();
         long orderId = 1L;
         DeliveryRequest request = DeliveryRequest.builder()
                 .orderId(orderId)
@@ -104,7 +101,7 @@ class DeliveryControllerTest {
 
     @Test
     void test_deliveryExecutiveNotFoundInGivenCity_badRequest() throws Exception {
-        Address address = spy(Address.builder()
+        Address address = Address.builder()
                 .buildingNumber(1)
                 .street("street")
                 .locality("locality")
@@ -112,7 +109,7 @@ class DeliveryControllerTest {
                 .state("state")
                 .country("country")
                 .zipcode("600001")
-                .build());
+                .build();
         long orderId = 1L;
         DeliveryRequest request = DeliveryRequest.builder()
                 .orderId(orderId)
@@ -129,9 +126,9 @@ class DeliveryControllerTest {
         ).andExpect(status().isBadRequest());
         verify(deliveryService, times(1)).facilitate(request);
     }
-    */
 
     @Test
+    @WithMockUser
     void test_whileUpdatingDeliveryStatusDeliveryNotFoundById_badRequest() throws Exception {
         String deliveryId = "id";
 
@@ -142,6 +139,7 @@ class DeliveryControllerTest {
     }
 
     @Test
+    @WithMockUser
     void test_userNotFoundWhileUpdatingStatus_badRequest() throws Exception {
         String deliveryId = "id";
 
@@ -152,6 +150,7 @@ class DeliveryControllerTest {
     }
 
     @Test
+    @WithMockUser
     void test_authenticatedUserIsNotSameAsExecutiveForDelivery_unauthorized() throws Exception {
         String deliveryId = "id";
 
@@ -162,6 +161,7 @@ class DeliveryControllerTest {
     }
 
     @Test
+    @WithMockUser
     void test_completedDeliveryStatusCannotBeUpdated_badRequest() throws Exception {
         String deliveryId = "id";
 
@@ -172,6 +172,7 @@ class DeliveryControllerTest {
     }
 
     @Test
+    @WithMockUser
     void test_deliveryStatusUpdated_ok() throws Exception {
         String deliveryId = "id";
 

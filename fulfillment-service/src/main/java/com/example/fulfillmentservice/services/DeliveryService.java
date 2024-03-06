@@ -89,12 +89,14 @@ public class DeliveryService {
 
         if (status.equals(DeliveryStatus.PICKED_UP)) {
             delivery.setStatus(DeliveryStatus.DELIVERED);
+            user.setAddress(delivery.getCustomerAddress());
             user.setAvailability(Availability.AVAILABLE);
-            userRepository.save(user);
         } else {
             delivery.setStatus(DeliveryStatus.PICKED_UP);
+            user.setAddress(delivery.getRestaurantAddress());
         }
         deliveryRepository.save(delivery);
+        userRepository.save(user);
 
         ApiResponse response = ApiResponse.builder()
                 .message(STATUS_UPDATED + delivery.getStatus().toString())

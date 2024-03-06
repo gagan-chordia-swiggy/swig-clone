@@ -197,6 +197,8 @@ class DeliveryServiceTest {
         assertThrows(DeliveryNotFoundException.class, () -> deliveryService.updateStatus(deliveryId));
         verify(deliveryRepository, times(1)).findById(deliveryId);
         verify(userRepository, never()).findByUsername(anyString());
+        verify(deliveryRepository, never()).save(any(Delivery.class));
+        verify(userRepository, never()).save(any(User.class));
     }
 
     @Test
@@ -216,6 +218,8 @@ class DeliveryServiceTest {
         assertThrows(UserNotFoundException.class, () -> deliveryService.updateStatus(deliveryId));
         verify(deliveryRepository, times(1)).findById(deliveryId);
         verify(userRepository, times(1)).findByUsername(username);
+        verify(deliveryRepository, never()).save(any(Delivery.class));
+        verify(userRepository, never()).save(any(User.class));
     }
 
     @Test
@@ -238,6 +242,8 @@ class DeliveryServiceTest {
         assertThrows(UnauthorizedStatusUpdateException.class, () -> deliveryService.updateStatus(deliveryId));
         verify(deliveryRepository, times(1)).findById(deliveryId);
         verify(userRepository, times(1)).findByUsername(username);
+        verify(deliveryRepository, never()).save(any(Delivery.class));
+        verify(userRepository, never()).save(any(User.class));
     }
 
     @Test
@@ -260,6 +266,8 @@ class DeliveryServiceTest {
         assertThrows(OrderHasBeenAlreadyDeliveredException.class, () -> deliveryService.updateStatus(deliveryId));
         verify(deliveryRepository, times(1)).findById(deliveryId);
         verify(userRepository, times(1)).findByUsername(username);
+        verify(deliveryRepository, never()).save(any(Delivery.class));
+        verify(userRepository, never()).save(any(User.class));
     }
 
     @Test
@@ -286,6 +294,8 @@ class DeliveryServiceTest {
         assertEquals(STATUS_UPDATED + DeliveryStatus.PICKED_UP, Objects.requireNonNull(response.getBody()).getMessage());
         verify(deliveryRepository, times(1)).findById(deliveryId);
         verify(userRepository, times(1)).findByUsername(username);
+        verify(deliveryRepository, times(1)).save(any(Delivery.class));
+        verify(userRepository, times(1)).save(any(User.class));
     }
 
     @Test
@@ -312,5 +322,7 @@ class DeliveryServiceTest {
         assertEquals(STATUS_UPDATED + DeliveryStatus.DELIVERED, Objects.requireNonNull(response.getBody()).getMessage());
         verify(deliveryRepository, times(1)).findById(deliveryId);
         verify(userRepository, times(1)).findByUsername(username);
+        verify(deliveryRepository, times(1)).save(any(Delivery.class));
+        verify(userRepository, times(1)).save(any(User.class));
     }
 }
