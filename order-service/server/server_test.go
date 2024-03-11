@@ -2,16 +2,18 @@ package main
 
 import (
 	"context"
-	"encoding/json"
+	"encoding/base64"
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	o "order-service/proto/orders"
 	u "order-service/proto/users"
 	"reflect"
+	"regexp"
 	"testing"
 )
 
@@ -261,15 +263,20 @@ func TestOrderServer_Place(t *testing.T) {
 		ctx context.Context
 		req *o.OrderRequest
 	}
+	type errs struct {
+		required   bool
+		statusCode codes.Code
+	}
+
 	tests := []struct {
 		name    string
 		args    args
 		rows    func()
 		want    *o.OrderResponse
-		wantErr bool
+		wantErr errs
 	}{
 		{
-			name: "Place an order",
+			name: "Place an order - without authentication",
 			args: args{
 				ctx: context.Background(),
 				req: &o.OrderRequest{
@@ -280,34 +287,58 @@ func TestOrderServer_Place(t *testing.T) {
 					},
 				},
 			},
-			rows: func() {
-				mock.ExpectBegin()
-				bytes, _ := json.Marshal(map[string]uint32{
-					"Dosa": 2,
-					"Idli": 2,
-				})
-				jsonStr := string(bytes)
-				rows := sqlmock.NewRows([]string{
-					"id",
-					"restaurant_id",
-					"username",
-					"price",
-					"items",
-				}).AddRow(1, "52f5e71b-3082-49b0-aec0-c31566c8b827", "username", 300, jsonStr)
-				mock.ExpectQuery("INSERT").WillReturnRows(rows)
-				mock.ExpectCommit()
+			rows: func() {},
+			want: nil,
+			wantErr: errs{
+				required:   true,
+				statusCode: codes.Unauthenticated,
 			},
-			want: &o.OrderResponse{
-				OrderId:      1,
-				Username:     "username",
-				RestaurantId: "52f5e71b-3082-49b0-aec0-c31566c8b827",
-				Items: map[string]uint32{
-					"Dosa": 2,
-					"Idli": 2,
+		},
+		{
+			name: "Place an order - user not found",
+			args: args{
+				ctx: mockContext(),
+				req: &o.OrderRequest{
+					RestaurantId: "52f5e71b-3082-49b0-aec0-c31566c8b827",
+					Items: map[string]uint32{
+						"Dosa": 2,
+						"Idli": 2,
+					},
 				},
-				TotalAmount: 420,
 			},
-			wantErr: false,
+			rows: func() {
+				mock.ExpectQuery(regexp.QuoteMeta(`SELECT * FROM "users" WHERE username = $1`)).WithArgs("gagan").WillReturnError(gorm.ErrRecordNotFound)
+			},
+			want: nil,
+			wantErr: errs{
+				required:   true,
+				statusCode: codes.NotFound,
+			},
+		},
+		{
+			name: "Place an order - with invalid credentials",
+			args: args{
+				ctx: mockContext(),
+				req: &o.OrderRequest{
+					RestaurantId: "52f5e71b-3082-49b0-aec0-c31566c8b827",
+					Items: map[string]uint32{
+						"Dosa": 2,
+						"Idli": 2,
+					},
+				},
+			},
+			rows: func() {
+				rows := sqlmock.NewRows([]string{"id", "name", "username", "password", "building_number", "street", "locality", "city", "state", "country", "zipcode"}).
+					AddRow(5, "Gagan", "gagan", "passwor", 14, "Ramanuja Street", "Sowcarpet", "Chennai", "Tamil Nadu", "India", "600001")
+				//mock.ExpectBegin()
+				mock.ExpectQuery(regexp.QuoteMeta(`SELECT * FROM "users" WHERE username = $1`)).WithArgs("gagan").WillReturnRows(rows)
+				//mock.ExpectCommit()
+			},
+			want: nil,
+			wantErr: errs{
+				required:   true,
+				statusCode: codes.InvalidArgument,
+			},
 		},
 	}
 	for _, tt := range tests {
@@ -315,14 +346,28 @@ func TestOrderServer_Place(t *testing.T) {
 			orderServer := &OrderServer{
 				DB: gormDb,
 			}
+			tt.rows()
 			got, err := orderServer.Place(tt.args.ctx, tt.args.req)
-			if (err != nil) != tt.wantErr {
+			if (err != nil) == tt.wantErr.required {
 				statusErr, ok := status.FromError(err)
 				assert.True(t, ok, "Expected gRPC status error")
-				assert.Equal(t, codes.Unauthenticated, statusErr.Code(), "Expected InvalidArgument error")
+				assert.Equal(t, tt.wantErr.statusCode, statusErr.Code())
 				return
 			}
 			assert.Equalf(t, tt.want, got, "Place(%v, %v)", tt.args.ctx, tt.args.req)
 		})
 	}
+}
+
+func mockContext() context.Context {
+	creds := "gagan:password"
+	encodedCreds := base64.StdEncoding.EncodeToString([]byte(creds))
+
+	authHeader := "Basic " + encodedCreds
+
+	md := metadata.New(map[string]string{
+		"authorization": authHeader,
+	})
+
+	return metadata.NewIncomingContext(context.Background(), md)
 }
